@@ -68,7 +68,7 @@ class TrainingLoopTests(unittest.TestCase):
     def test_one_step_training_and_validation(self):
         tokenizer = train_byte_bpe(["hello world", "training text", "validation text"], vocab_size=260)
         train_data = TokenBlockDataset(["hello world", "training text"], tokenizer, 8, 260)
-        validation_data = TokenBlockDataset(["validation text"], tokenizer, 8, 128)
+        validation_data = TokenBlockDataset(["validation text"], tokenizer, 8, 260)
         train_loader = DataLoader(train_data, batch_size=1, shuffle=False)
         validation_loader = DataLoader(validation_data, batch_size=1)
         config = ModelConfig(vocab_size=260, hidden_size=16, num_layers=1,
