@@ -67,11 +67,11 @@ class TrainingLoopTests(unittest.TestCase):
 
     def test_one_step_training_and_validation(self):
         tokenizer = train_byte_bpe(["hello world", "training text", "validation text"], vocab_size=260)
-        train_data = TokenBlockDataset(["hello world", "training text"], tokenizer, 8, 128)
+        train_data = TokenBlockDataset(["hello world", "training text"], tokenizer, 8, 260)
         validation_data = TokenBlockDataset(["validation text"], tokenizer, 8, 128)
         train_loader = DataLoader(train_data, batch_size=1, shuffle=False)
         validation_loader = DataLoader(validation_data, batch_size=1)
-        config = ModelConfig(vocab_size=128, hidden_size=16, num_layers=1,
+        config = ModelConfig(vocab_size=260, hidden_size=16, num_layers=1,
             num_attention_heads=2, num_key_value_heads=2, intermediate_size=32,
             context_length=8, max_output_tokens=4)
         model = VxnciForCausalLM(config)
