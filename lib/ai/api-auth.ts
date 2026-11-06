@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
  */
 export function isValidApiKey(request: NextRequest): boolean {
   const authorization = request.headers.get("authorization") ?? "";
-  const match = /^Bearer ([^\\s]+)$/.exec(authorization);
+  const match = /^Bearer (\S+)$/.exec(authorization);
   const configuredHash = process.env.VXNCI_API_KEY_SHA256 ?? "";
 
   if (!match || !/^[a-f0-9]{64}$/i.test(configuredHash)) return false;
