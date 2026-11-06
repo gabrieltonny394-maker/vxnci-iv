@@ -60,6 +60,7 @@ def train_model(
     warmup_steps: int,
     max_steps: int | None = None,
     seed: int = 42,
+    optimizer: torch.optim.Optimizer | None = None,
 ) -> dict[str, Any]:
     if epochs < 1 or learning_rate <= 0 or warmup_steps < 0:
         raise ValueError("epochs and learning rate must be positive; warmup cannot be negative")
@@ -67,7 +68,7 @@ def train_model(
         raise ValueError("max_steps must be positive when provided")
     set_seed(seed)
     model.to(device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    optimizer = optimizer or torch.optim.AdamW(model.parameters(), lr=learning_rate)
     steps_per_epoch = len(train_loader)
     total_steps = max_steps or (steps_per_epoch * epochs)
     if total_steps < 1:
@@ -168,10 +169,12 @@ def main() -> None:
 
     model = VxnciForCausalLM(config)
     device = torch.device(args.device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     result = train_model(
         model, train_loader, validation_loader, device=device,
         epochs=args.epochs, learning_rate=args.learning_rate,
         warmup_steps=args.warmup_steps, max_steps=args.max_steps, seed=args.seed,
+        optimizer=optimizer,
     )
     result.update({
         "model_id": config.model_id,
@@ -180,7 +183,6 @@ def main() -> None:
         "corpus": str(args.data),
         "checkpoint_format": "safetensors",
     })
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     save_checkpoint(model, optimizer, args.output_dir, result)
     print(json.dumps({key: value for key, value in result.items() if key != "history"}, indent=2))
 
