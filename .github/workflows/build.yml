@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  model-tests:
+  python-model-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -23,12 +23,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install training dependency
-        run: python -m pip install -r requirements-training.txt
-      - name: Run model and tokenizer tests
-        run: |
-          python -m unittest discover -s tests -p 'test_model.py' -v
-          python -m unittest discover -s tests -p 'test_tokenizer.py' -v
+      - name: Install CPU PyTorch
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Run tokenizer tests
+        run: python -m unittest discover -s tests -p 'test_tokenizer.py' -v
+      - name: Run model tests
+        run: python -m unittest discover -s tests -p 'test_model.py' -v
 
   build:
     runs-on: ubuntu-latest
