@@ -14,7 +14,15 @@ The goal is not to build a thin wrapper around ChatGPT, Claude, or Gemini. VX NC
 
 We will not copy proprietary source code, private model weights, branding, or confidential systems belonging to other companies.
 
-## 2. Independence strategy
+## 2. AI provider identity and model naming
+
+The user's approved name for the AI technology division/provider is **VXNCI Intelligence**. It sits under LUXORA CLUB and powers the VX NCI IV assistant.
+
+The planned first proprietary model family begins with **VXNCI-1**. This is a naming decision, not a claim that the model has already been trained or implemented. Future model generations may use sequential names (for example, VXNCI-2) if that naming remains appropriate.
+
+VXNCI Intelligence is the intended owner-facing identity for the model runtime, orchestration, and future proprietary model research. External model APIs and open-weight models may be used as replaceable development components, but must be disclosed accurately and must not be represented as proprietary VXNCI models.
+
+## 3. Independence strategy
 
 Build independence in stages rather than pretending that a new foundation model can be trained immediately without substantial data, compute, expertise, and funding.
 
@@ -40,7 +48,7 @@ Build curated datasets and evaluation suites. Experiment with fine-tuning or oth
 
 Work toward VX NCI IV-owned model checkpoints and, eventually, a foundation model trained from the ground up if resources and evidence justify that investment. This is a long-term research and infrastructure programme, not an MVP promise.
 
-## 3. First usable product
+## 4. First usable product
 
 The first release remains a responsive text-chat application:
 - Start, view, and manage conversations.
@@ -52,7 +60,7 @@ The first release remains a responsive text-chat application:
 
 For the earliest working release, a permitted open-weight model hosted in an environment we control is the preferred independence path if it can be run reliably and affordably. A third-party API may be used temporarily only if separately approved; it must remain replaceable and must not be described as our own model.
 
-## 4. Technical architecture
+## 5. Technical architecture
 
 Current application foundation:
 - Next.js with TypeScript and the App Router.
@@ -86,7 +94,7 @@ docs/
 
 The interface must not contain model credentials. Model-specific code must be isolated behind interfaces so a model can be changed without rewriting the chat UI.
 
-## 5. Development phases
+## 6. Development phases
 
 ### Phase 0 — Foundation
 - [x] Create the initial Next.js/TypeScript scaffold on the development branch.
@@ -128,7 +136,7 @@ The interface must not contain model credentials. Model-specific code must be is
 - [ ] Publish accurate model/provider disclosures and limitations.
 - [ ] Do not call the product or model independent beyond what has actually been implemented and verified.
 
-## 6. Security, privacy, and cost rules
+## 7. Security, privacy, and cost rules
 
 - Never commit API keys, passwords, tokens, or service-role credentials.
 - Keep secrets server-side and out of logs, client bundles, and public configuration.
@@ -139,13 +147,13 @@ The interface must not contain model credentials. Model-specific code must be is
 - Provide clear controls and disclosures for conversation storage and any future memory.
 - Validate requests and apply rate/size limits before public deployment.
 
-## 7. Truthful implementation status
+## 8. Truthful implementation status
 
 A planned module is not a working feature. The current repository contains an early web application scaffold and a static chat shell. It does not yet contain a connected AI model, a functioning orchestration engine, local chat persistence, user accounts, or a proprietary model.
 
 VX NCI IV may be described as having its own AI platform only as the relevant modules are implemented and tested. It may be described as having its own model only when a VX NCI IV model checkpoint has actually been developed and verified.
 
-## 8. Immediate next steps
+## 9. Immediate next steps
 
 1. Verify the existing application build.
 2. Implement the functional chat foundation.
