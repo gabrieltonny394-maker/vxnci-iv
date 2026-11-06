@@ -3,7 +3,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import torch
+from torch.utils.data import DataLoader
+
 from training.data import TokenBlockDataset, load_corpus_records
+from training.model import ModelConfig, VxnciForCausalLM
+from training.train import learning_rate_at_step, train_model
 from training.tokenizer import train_byte_bpe
 
 
@@ -53,6 +58,30 @@ class TrainingDataTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exceeds model"):
             TokenBlockDataset(["hello"], tokenizer, context_length=8, model_vocab_size=259)
 
+
+
+class TrainingLoopTests(unittest.TestCase):
+    def test_learning_rate_warmup_and_decay(self):
+        self.assertAlmostEqual(learning_rate_at_step(0, 10, 2, 0.001), 0.0005)
+        self.assertAlmostEqual(learning_rate_at_step(9, 10, 2, 0.001), 0.0)
+
+    def test_one_step_training_and_validation(self):
+        tokenizer = train_byte_bpe(["hello world", "training text", "validation text"], vocab_size=260)
+        train_data = TokenBlockDataset(["hello world", "training text"], tokenizer, 8, 128)
+        validation_data = TokenBlockDataset(["validation text"], tokenizer, 8, 128)
+        train_loader = DataLoader(train_data, batch_size=1, shuffle=False)
+        validation_loader = DataLoader(validation_data, batch_size=1)
+        config = ModelConfig(vocab_size=128, hidden_size=16, num_layers=1,
+            num_attention_heads=2, num_key_value_heads=2, intermediate_size=32,
+            context_length=8, max_output_tokens=4)
+        model = VxnciForCausalLM(config)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
+        result = train_model(model, train_loader, validation_loader,
+            device=torch.device("cpu"), epochs=1, learning_rate=0.001,
+            warmup_steps=0, max_steps=1, optimizer=optimizer)
+        self.assertEqual(result["completed_steps"], 1)
+        self.assertTrue(torch.isfinite(torch.tensor(result["validation_loss"])))
+        self.assertGreater(len(optimizer.state), 0)
 
 if __name__ == "__main__":
     unittest.main()
