@@ -30,7 +30,7 @@ The fields are provenance declarations, not automatic legal verification. A huma
 From the repository root with Python 3.10 or newer:
 
 \`\`\`bash
-python -m unittest tests.test_tokenizer
+python -m unittest discover -s tests -p 'test_tokenizer.py' -v
 python -m training.train_tokenizer --input path/to/approved-corpus.jsonl --output artifacts/vxnci-1-tiny/tokenizer.json --vocab-size 8192
 \`\`\`
 
