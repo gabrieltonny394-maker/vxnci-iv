@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from training.data import TokenBlockDataset, load_corpus_records
 from training.model import ModelConfig, VxnciForCausalLM
-from training.train import learning_rate_at_step, train_model
+from training.train import learning_rate_at_step, save_checkpoint, train_model
 from training.tokenizer import train_byte_bpe
 
 
@@ -82,6 +82,24 @@ class TrainingLoopTests(unittest.TestCase):
         self.assertEqual(result["completed_steps"], 1)
         self.assertTrue(torch.isfinite(torch.tensor(result["validation_loss"])))
         self.assertGreater(len(optimizer.state), 0)
+
+
+    def test_checkpoint_writes_weights_optimizer_and_metadata(self):
+        from safetensors.torch import load_file
+
+        config = ModelConfig(vocab_size=260, hidden_size=16, num_layers=1,
+            num_attention_heads=2, num_key_value_heads=2, intermediate_size=32,
+            context_length=8, max_output_tokens=4)
+        model = VxnciForCausalLM(config)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
+        with tempfile.TemporaryDirectory() as directory:
+            save_checkpoint(model, optimizer, directory, {"model_id": config.model_id})
+            root = Path(directory)
+            weights = load_file(str(root / "model.safetensors"))
+            self.assertIn("token_embedding.weight", weights)
+            self.assertTrue((root / "optimizer_state.pt").exists())
+            metadata = json.loads((root / "training_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["model_id"], config.model_id)
 
 if __name__ == "__main__":
     unittest.main()
