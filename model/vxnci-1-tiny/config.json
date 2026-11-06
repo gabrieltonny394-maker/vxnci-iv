@@ -1,0 +1,39 @@
+{
+  "modelId": "vxnci-1-tiny",
+  "displayName": "VXNCI-1 Tiny",
+  "status": "architecture-only",
+  "architecture": "decoder-only-transformer",
+  "parameters": {
+    "vocabSize": 8192,
+    "hiddenSize": 256,
+    "numLayers": 6,
+    "numAttentionHeads": 8,
+    "numKeyValueHeads": 8,
+    "intermediateSize": 1024,
+    "contextLength": 512,
+    "maxOutputTokens": 256,
+    "tieWordEmbeddings": true,
+    "useBias": false
+  },
+  "components": {
+    "normalization": "RMSNorm",
+    "positionEncoding": "RoPE",
+    "attention": "causal-multi-head-self-attention",
+    "feedForward": "SwiGLU",
+    "tokenizer": "byte-level-BPE",
+    "tokenizerFallback": "UTF-8-byte-fallback"
+  },
+  "training": {
+    "initialization": "random",
+    "framework": "PyTorch",
+    "deviceTarget": "CPU-first",
+    "precision": "float32-baseline",
+    "optimizer": "AdamW",
+    "learningRateSchedule": "warmup-plus-cosine-decay",
+    "checkpointFormat": "safetensors"
+  },
+  "serving": {
+    "mode": "local-only",
+    "externalProviderFallback": false
+  }
+}
