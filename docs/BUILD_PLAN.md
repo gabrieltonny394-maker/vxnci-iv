@@ -72,30 +72,19 @@ Current application foundation:
 
 The detailed VXNCI Intelligence architecture, including module boundaries, model-neutral contracts, routing, safety, runtime strategy, and implementation sequence, is documented in [AI_CORE_ARCHITECTURE.md](./AI_CORE_ARCHITECTURE.md).
 
-Proposed logical modules (names may evolve during implementation):
+Current AI Core code boundaries include:
 
 ```text
-app/
-  api/chat/route.ts
-  page.tsx
-components/
-  chat/
-lib/
-  ai/
-    contracts.ts
-    model-router.ts
-    orchestration.ts
-    safety.ts
-  chat/
-    storage.ts
-    types.ts
-  tools/
-docs/
-  BUILD_PLAN.md
-  AI_CORE_ARCHITECTURE.md
+app/api/chat/route.ts
+lib/ai/
+  contracts.ts
+  model-router.ts
+  orchestration.ts
+  safety.ts
+.env.example
 ```
 
-The interface must not contain model credentials. Model-specific code must be isolated behind interfaces so a model can be changed without rewriting the chat UI.
+The model adapter registry is currently empty. The API route validates input and returns a clear service-unavailable response until a real model adapter is configured. It does not generate simulated AI answers.
 
 ## 6. Development phases
 
@@ -103,22 +92,24 @@ The interface must not contain model credentials. Model-specific code must be is
 - [x] Create the initial Next.js/TypeScript scaffold on the development branch.
 - [x] Record the independent AI platform direction in this plan.
 - [x] Write the VXNCI Intelligence AI Core architecture specification.
+- [x] Add an environment configuration example without real secrets.
 - [ ] Verify a successful application build.
-- [ ] Add and validate environment configuration examples without real secrets.
 - [ ] Confirm the practical local development and deployment path.
 
 ### Phase 1 — Functional chat
-- [ ] Implement real conversation state and message sending.
+- [ ] Implement real conversation state and message sending in the client.
 - [ ] Add clear loading, error, retry, and cancellation behavior.
 - [ ] Add browser-local chat persistence.
 - [ ] Test responsive desktop and mobile layouts.
 
 ### Phase 2 — VX NCI IV AI Core
-- [ ] Define and test model-neutral request and response contracts.
-- [ ] Implement server-side orchestration and model adapter interfaces.
-- [ ] Add model routing/configuration without binding the UI to a vendor.
-- [ ] Add input validation, output handling, rate limits, and safety controls.
-- [ ] Add usage and operational monitoring without leaking private content.
+- [x] Define initial model-neutral request and response TypeScript contracts.
+- [x] Add a server-side model adapter registry and router boundary.
+- [x] Add initial orchestration and request validation.
+- [x] Add an API route that rejects invalid requests and clearly reports an unconfigured model runtime.
+- [ ] Add automated tests for contracts, validation, routing, and API behavior.
+- [ ] Implement and register a real model adapter.
+- [ ] Add production-grade rate limits, output checks, and operational monitoring.
 
 ### Phase 3 — Independent model runtime
 - [ ] Research open-weight models and their licences.
@@ -153,17 +144,17 @@ The interface must not contain model credentials. Model-specific code must be is
 
 ## 8. Truthful implementation status
 
-The current repository contains an early web application scaffold, a static chat shell, and the AI Core architecture specification. The architecture document is a design, not a working AI engine.
+The repository now contains the early Next.js application scaffold, a static chat shell, the AI Core architecture specification, initial model contracts, a model router boundary, request validation, orchestration scaffolding, and a server chat route.
 
-It does not yet contain a connected AI model, a functioning orchestration engine, local chat persistence, user accounts, or a proprietary model. The application build has not yet been successfully verified.
+This is an initial backend foundation, not a functioning AI assistant. No model adapter is registered, no AI model is connected, and chat requests cannot yet produce model answers. The client composer remains disabled. Local chat persistence, user accounts, and proprietary model weights are not implemented. The application build has not yet been successfully verified.
 
 VX NCI IV may be described as having its own AI platform only as the relevant modules are implemented and tested. It may be described as having its own model only when a VX NCI IV model checkpoint has actually been developed and verified.
 
 ## 9. Immediate next steps
 
-1. Verify the existing application build.
-2. Implement and test the model-neutral AI Core contracts.
-3. Implement functional chat state, server request validation, and a clearly labelled test adapter.
+1. Verify the existing application build and type-check the new backend modules.
+2. Add automated tests for request validation and model routing.
+3. Implement client-side chat state and connect the composer to the server route.
 4. Evaluate open-weight models against the available hardware and budget before choosing one.
 5. Implement a real model runtime only after the feasibility review.
 
