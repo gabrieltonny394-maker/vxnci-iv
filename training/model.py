@@ -34,8 +34,8 @@ class ModelConfig:
             raise ValueError("All model dimensions and token limits must be positive")
         if self.hidden_size % self.num_attention_heads:
             raise ValueError("hidden_size must be divisible by num_attention_heads")
-        if self.num_attention_heads % self.num_key_value_heads:
-            raise ValueError("num_attention_heads must be divisible by num_key_value_heads")
+        if self.num_attention_heads != self.num_key_value_heads:
+            raise ValueError("This first implementation requires equal attention and key/value head counts")
         if (self.hidden_size // self.num_attention_heads) % 2:
             raise ValueError("Attention head dimension must be even for RoPE")
         if self.max_output_tokens > self.context_length:
