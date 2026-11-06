@@ -70,6 +70,8 @@ Current application foundation:
 - GitHub repository `gabrieltonny394-maker/vxnci-iv`.
 - Active development branch: `develop/vxnci-foundation`; keep `main` stable.
 
+The detailed VXNCI Intelligence architecture, including module boundaries, model-neutral contracts, routing, safety, runtime strategy, and implementation sequence, is documented in [AI_CORE_ARCHITECTURE.md](./AI_CORE_ARCHITECTURE.md).
+
 Proposed logical modules (names may evolve during implementation):
 
 ```text
@@ -80,7 +82,7 @@ components/
   chat/
 lib/
   ai/
-    model-adapter.ts
+    contracts.ts
     model-router.ts
     orchestration.ts
     safety.ts
@@ -90,6 +92,7 @@ lib/
   tools/
 docs/
   BUILD_PLAN.md
+  AI_CORE_ARCHITECTURE.md
 ```
 
 The interface must not contain model credentials. Model-specific code must be isolated behind interfaces so a model can be changed without rewriting the chat UI.
@@ -99,6 +102,7 @@ The interface must not contain model credentials. Model-specific code must be is
 ### Phase 0 — Foundation
 - [x] Create the initial Next.js/TypeScript scaffold on the development branch.
 - [x] Record the independent AI platform direction in this plan.
+- [x] Write the VXNCI Intelligence AI Core architecture specification.
 - [ ] Verify a successful application build.
 - [ ] Add and validate environment configuration examples without real secrets.
 - [ ] Confirm the practical local development and deployment path.
@@ -110,7 +114,7 @@ The interface must not contain model credentials. Model-specific code must be is
 - [ ] Test responsive desktop and mobile layouts.
 
 ### Phase 2 — VX NCI IV AI Core
-- [ ] Define model-neutral request and response contracts.
+- [ ] Define and test model-neutral request and response contracts.
 - [ ] Implement server-side orchestration and model adapter interfaces.
 - [ ] Add model routing/configuration without binding the UI to a vendor.
 - [ ] Add input validation, output handling, rate limits, and safety controls.
@@ -149,15 +153,18 @@ The interface must not contain model credentials. Model-specific code must be is
 
 ## 8. Truthful implementation status
 
-A planned module is not a working feature. The current repository contains an early web application scaffold and a static chat shell. It does not yet contain a connected AI model, a functioning orchestration engine, local chat persistence, user accounts, or a proprietary model.
+The current repository contains an early web application scaffold, a static chat shell, and the AI Core architecture specification. The architecture document is a design, not a working AI engine.
+
+It does not yet contain a connected AI model, a functioning orchestration engine, local chat persistence, user accounts, or a proprietary model. The application build has not yet been successfully verified.
 
 VX NCI IV may be described as having its own AI platform only as the relevant modules are implemented and tested. It may be described as having its own model only when a VX NCI IV model checkpoint has actually been developed and verified.
 
 ## 9. Immediate next steps
 
 1. Verify the existing application build.
-2. Implement the functional chat foundation.
-3. Design the model-neutral AI Core interfaces and security boundaries.
+2. Implement and test the model-neutral AI Core contracts.
+3. Implement functional chat state, server request validation, and a clearly labelled test adapter.
 4. Evaluate open-weight models against the available hardware and budget before choosing one.
+5. Implement a real model runtime only after the feasibility review.
 
 All development stays on `develop/vxnci-foundation`. Do not modify `main`, add credentials, enable paid services, or incur hosting/model costs without explicit approval.
