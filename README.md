@@ -15,11 +15,31 @@ Build a capable, standalone AI assistant with a dedicated interface and a founda
 
 LUXORA CLUB is the parent company. VX NCI IV is one of its independent projects. Other LUXORA CLUB projects, including CREOVA and the Software Creation Tool, remain separate products.
 
-## Development status
+## Current development status
 
-**Stage:** Initial repository foundation.
+**Stage:** Initial web application scaffold.
 
-This repository is currently being initialized. Features listed in the vision are goals, not claims of implemented functionality.
+The development branch now contains a Next.js App Router and TypeScript foundation, a responsive ChatGPT-style interface shell, and base styling. The interface intentionally indicates that the AI engine is not connected yet. No live AI responses, saved conversation history, accounts, file uploads, or voice features are implemented.
+
+The scaffold has not yet been build-tested in CI or deployed. See [the MVP build plan](docs/BUILD_PLAN.md) for the phased roadmap and verification criteria.
+
+## Run locally
+
+Requirements: Node.js 20.9 or newer and npm.
+
+```bash
+npm install
+npm run dev
+```
+
+Then open http://localhost:3000.
+
+To create a production build:
+
+```bash
+npm run build
+npm run start
+```
 
 ## Development principles
 
@@ -31,7 +51,7 @@ This repository is currently being initialized. Features listed in the vision ar
 
 ## Next steps
 
-1. Establish the development branch and project structure.
-2. Define the application architecture and provider interface.
-3. Build the first working web application incrementally.
-4. Add persistence and authentication only after their design and security requirements are clear.
+1. Verify the application scaffold with an automated production build.
+2. Define the provider-neutral AI interface and server endpoint.
+3. Connect one approved free-tier model provider securely.
+4. Implement real conversations and browser-local history.
