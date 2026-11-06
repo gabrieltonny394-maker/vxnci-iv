@@ -28,7 +28,7 @@ def set_seed(seed: int) -> None:
 def learning_rate_at_step(step: int, total_steps: int, warmup_steps: int, base_lr: float) -> float:
     if warmup_steps > 0 and step < warmup_steps:
         return base_lr * float(step + 1) / float(warmup_steps)
-    decay_steps = max(1, total_steps - warmup_steps)
+    decay_steps = max(1, total_steps - warmup_steps - 1)
     progress = min(1.0, max(0.0, (step - warmup_steps) / decay_steps))
     return base_lr * 0.5 * (1.0 + math.cos(math.pi * progress))
 
