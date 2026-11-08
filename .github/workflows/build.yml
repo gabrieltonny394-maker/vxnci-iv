@@ -35,6 +35,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_training.py' -v
       - name: Run benchmark harness tests
         run: python -m unittest discover -s tests -p 'test_benchmark.py' -v
+      - name: Run task-success benchmark tests
+        run: python -m unittest discover -s tests -p 'test_task_benchmark.py' -v
 
   build:
     runs-on: ubuntu-latest

@@ -21,7 +21,7 @@ class TaskEvaluatorTests(unittest.TestCase):
     def test_exact_contains_and_regex(self):
         self.assertTrue(evaluate_prediction(" 42 ", "42", "exact"))
         self.assertTrue(evaluate_prediction("The answer is FOUR.", "four", "contains"))
-        self.assertTrue(evaluate_prediction("value: 17", r"\\d{2}", "regex"))
+        self.assertTrue(evaluate_prediction("value: 17", r"\d{2}", "regex"))
 
     def test_invalid_regex_and_evaluator_rejected(self):
         with self.assertRaisesRegex(ValueError, "Invalid expected regex"):
@@ -34,9 +34,9 @@ class TaskEvaluatorTests(unittest.TestCase):
             path = Path(directory) / "tasks.jsonl"
             path.write_text(
                 json.dumps({"id":"a","category":"math","prompt":"math",
-                            "expected":"4","evaluator":"exact"}) + "\\n" +
+                            "expected":"4","evaluator":"exact"}) + "\n" +
                 json.dumps({"id":"a","category":"math","prompt":"math",
-                            "expected":"4","evaluator":"exact"}) + "\\n",
+                            "expected":"4","evaluator":"exact"}) + "\n",
                 encoding="utf-8",
             )
             with self.assertRaisesRegex(ValueError, "Duplicate task id"):
