@@ -68,7 +68,7 @@ class TaskEvaluatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "context window"):
             model.generate(prompt, max_new_tokens=7)
         with self.assertRaisesRegex(ValueError, "output limit"):
-            model.generate(prompt, max_new_tokens=5)
+            model.generate(prompt, max_new_tokens=9)
 
     def test_tiny_adapter_generates_text_with_local_tokenizer(self):
         tokenizer = train_byte_bpe(["test"], vocab_size=260)
