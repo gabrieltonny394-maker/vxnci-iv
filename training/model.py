@@ -170,5 +170,48 @@ class VxnciForCausalLM(nn.Module):
                 labels[:, 1:].contiguous().view(-1), ignore_index=-100)
         return result
 
+    @torch.inference_mode()
+    def generate(
+        self,
+        input_ids: torch.Tensor,
+        *,
+        max_new_tokens: int,
+        eos_token_id: int | None = None,
+    ) -> torch.Tensor:
+        """Greedy autoregressive decoding; returns prompt plus generated token IDs.
+
+        This reference path recomputes the full prefix on every step and is
+        intentionally simple. It is not a KV-cache or production serving path.
+        """
+        if input_ids.ndim != 2 or input_ids.dtype != torch.long:
+            raise ValueError("input_ids must be a 2D torch.long tensor")
+        if input_ids.shape[0] < 1 or input_ids.shape[1] < 1:
+            raise ValueError("input_ids must contain at least one prompt token")
+        if max_new_tokens < 0 or max_new_tokens > self.config.max_output_tokens:
+            raise ValueError("max_new_tokens is outside the configured output limit")
+        if input_ids.shape[1] + max_new_tokens > self.config.context_length:
+            raise ValueError("Prompt plus requested output exceeds the configured context window")
+        if torch.any(input_ids < 0) or torch.any(input_ids >= self.config.vocab_size):
+            raise ValueError("input_ids contains a token outside the vocabulary")
+        if eos_token_id is not None and not 0 <= eos_token_id < self.config.vocab_size:
+            raise ValueError("eos_token_id is outside the vocabulary")
+
+        generated = input_ids
+        finished = torch.zeros(input_ids.shape[0], dtype=torch.bool, device=input_ids.device)
+        for _ in range(max_new_tokens):
+            next_token = self(generated)["logits"][:, -1, :].argmax(dim=-1, keepdim=True)
+            if eos_token_id is not None:
+                next_token = torch.where(
+                    finished[:, None],
+                    torch.full_like(next_token, eos_token_id),
+                    next_token,
+                )
+            generated = torch.cat((generated, next_token), dim=1)
+            if eos_token_id is not None:
+                finished |= next_token.squeeze(1).eq(eos_token_id)
+                if bool(finished.all()):
+                    break
+        return generated
+
     def parameter_count(self, trainable_only: bool = True) -> int:
         return sum(p.numel() for p in self.parameters() if not trainable_only or p.requires_grad)
