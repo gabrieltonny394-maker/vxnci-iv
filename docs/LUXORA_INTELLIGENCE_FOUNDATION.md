@@ -16,7 +16,7 @@ The approved model hierarchy is:
 
 | Model | Position | Target capability |
 |---|---|---|
-| LUXORA Core | Entry | Reliable everyday language understanding, instruction following, summarization, and simple reasoning |
+| LUXORA Core | Entry | A general-purpose assistant model targeting the essential capability breadth of a modern lightweight AI: conversation, knowledge Q&A, writing, coding, reasoning, maths, summarization, translation, image understanding, document analysis, and tool-assisted workflows |
 | LUXORA Nova | Advanced | Stronger multi-step reasoning, broader knowledge tasks, coding assistance, and more complex instruction following |
 | LUXORA Titan | Expert | Deeper analysis, difficult coding, planning, synthesis, and longer reasoning tasks |
 | LUXORA Apex | Flagship | The highest capability level in the LUXORA family, targeting the most demanding reasoning, research, coding, and multimodal tasks |
@@ -168,3 +168,71 @@ The first intelligence milestone is complete when:
 3. Design the small-scale experiment around actual available compute and lawful data.
 4. Implement the training/evaluation pipeline in a separate research area of the repository.
 5. Run only a bounded experiment that fits approved free resources.
+
+
+## 10. LUXORA Core — first-release capability target
+
+The user's approved direction is for **LUXORA Core to target the essential capability breadth of a modern lightweight general-purpose assistant model**, rather than limiting the first model to a basic text chatbot. This is a product and engineering target, not a claim that the model currently exists or has achieved these capabilities.
+
+### 10.1 Core model capabilities
+
+The Core model must be developed and evaluated for:
+
+- Natural, multi-turn conversation and conversational context handling.
+- General knowledge question answering, with uncertainty expressed when evidence is insufficient.
+- Writing, editing, rewriting, and creative generation.
+- Code generation, explanation, and debugging assistance.
+- Logical reasoning, multi-step problem solving, and planning.
+- Mathematics, including arithmetic and progressively harder quantitative tasks.
+- Summarization and analysis of supplied text and documents.
+- Multilingual understanding and translation.
+- Instruction following across multi-step requests and explicit constraints.
+
+### 10.2 Multimodal and connected capabilities
+
+The complete LUXORA Core assistant experience is also intended to support:
+
+- **Image understanding:** accepting images and answering questions about their contents. This requires a vision-capable model architecture, suitable training/evaluation data, and image-input processing; it must not be claimed for a text-only checkpoint.
+- **Document and file analysis:** extracting, summarizing, and reasoning over user-provided files. File parsing, OCR where needed, safe handling, and context assembly may be platform services around the model.
+- **Research assistance:** using retrieved sources and presenting source-grounded answers. Live web access is a retrieval/tool integration, not knowledge automatically present in model weights.
+- **Tool use and task execution:** selecting and calling permitted tools, interpreting results, and completing multi-step workflows. Tool permissions, orchestration, auditability, and user confirmation for consequential actions belong to the LUXORA AI runtime.
+- **Browser-based workflows and automation:** supported through controlled browser/tool integrations, not by the neural model alone.
+
+Voice input/output and audio understanding remain future multimodal extensions unless they are explicitly added to a Core release scope and pass their own tests.
+
+### 10.3 Capability ownership: model versus platform
+
+Do not confuse the model's native abilities with capabilities supplied by the surrounding product:
+
+| Capability | Primary implementation |
+|---|---|
+| Conversation, language, writing, reasoning, coding, mathematics, translation | Core model weights and inference runtime |
+| Image understanding | Multimodal model plus image preprocessing |
+| File reading and document analysis | File parsers/OCR plus Core reasoning |
+| Live research and current information | Retrieval/search tools plus Core synthesis |
+| Tool use and task execution | Core tool-selection ability plus permissioned orchestration |
+| Browser automation | Browser integration, safeguards, and Core-directed workflow |
+
+### 10.4 Release acceptance gates
+
+Each advertised capability must have a repeatable test set and published results. At minimum, evaluate:
+
+- Multi-turn conversation and context retention.
+- General question answering, factuality, and calibrated uncertainty.
+- Writing quality and instruction adherence.
+- Code generation and debugging using executable tests where possible.
+- Mathematics with exact-answer checks.
+- Reasoning and multi-step task completion.
+- Summarization faithfulness against source documents.
+- Translation quality across selected supported languages.
+- Image question answering, if vision is included in the release.
+- Document extraction and analysis, if file support is included.
+- Tool selection, correct argument formation, permission enforcement, and safe failure handling.
+- Robustness, privacy, prompt-injection resistance, latency, and reliability.
+
+A capability is **not launch-ready** merely because a UI control or API endpoint exists. It must pass its relevant evaluations on the actual Core checkpoint and the integrated LUXORA AI system. Report unsupported tasks and known limitations honestly.
+
+### 10.5 Benchmark positioning
+
+The user's chosen reference is the capability breadth of a modern lightweight general-purpose AI assistant. This is a benchmark direction, not a promise of parity with Claude or any other vendor. Compare against external models only using named, repeatable benchmarks and equivalent test conditions. Do not select model size, training duration, or infrastructure before assessing lawful data availability and approved compute.
+
