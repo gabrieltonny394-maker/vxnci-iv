@@ -4,10 +4,10 @@ import unittest
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader, TensorDataset
-
-from training.benchmark import benchmark_model, percentile
+from training.benchmark import benchmark_model, percentile, run_benchmark
 from training.model import ModelConfig, VxnciForCausalLM
+from training.tokenizer import train_byte_bpe
+from training.train import save_checkpoint
 
 
 class BenchmarkMetricTests(unittest.TestCase):
@@ -63,6 +63,72 @@ class BenchmarkMetricTests(unittest.TestCase):
             benchmark_model(
                 self.model, loader, device=torch.device("cpu"), warmup_batches=1
             )
+
+    def test_end_to_end_checkpoint_benchmark_writes_hashed_report(self):
+        from safetensors.torch import load_file
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "config.json"
+            config_path.write_text(json.dumps({
+                "modelId": self.config.model_id,
+                "parameters": {
+                    "vocabSize": self.config.vocab_size,
+                    "hiddenSize": self.config.hidden_size,
+                    "numLayers": self.config.num_layers,
+                    "numAttentionHeads": self.config.num_attention_heads,
+                    "numKeyValueHeads": self.config.num_key_value_heads,
+                    "intermediateSize": self.config.intermediate_size,
+                    "contextLength": self.config.context_length,
+                    "maxOutputTokens": self.config.max_output_tokens,
+                    "tieWordEmbeddings": self.config.tie_word_embeddings,
+                    "useBias": self.config.use_bias,
+                },
+            }), encoding="utf-8")
+
+            tokenizer = train_byte_bpe(
+                ["original training passage for tokenizer fitting"],
+                vocab_size=self.config.vocab_size,
+            )
+            tokenizer_path = root / "tokenizer.json"
+            tokenizer.save(tokenizer_path)
+
+            corpus_path = root / "corpus.jsonl"
+            rows = [
+                {"text": "original training passage", "source": "local-authored",
+                 "license": "original", "split": "train"},
+                {"text": "held out validation passage", "source": "local-authored",
+                 "license": "original", "split": "validation"},
+            ]
+            corpus_path.write_text(
+                "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+            )
+
+            optimizer = torch.optim.AdamW(self.model.parameters(), lr=0.001)
+            checkpoint_dir = root / "checkpoint"
+            save_checkpoint(self.model, optimizer, checkpoint_dir, {"model_id": self.config.model_id})
+            checkpoint_path = checkpoint_dir / "model.safetensors"
+            # Ensure the generated checkpoint can be read before invoking the runner.
+            self.assertIn("token_embedding.weight", load_file(str(checkpoint_path)))
+
+            output_path = root / "report.json"
+            report = run_benchmark(
+                config_path=config_path,
+                checkpoint_path=checkpoint_path,
+                tokenizer_path=tokenizer_path,
+                corpus_path=corpus_path,
+                output_path=output_path,
+                batch_size=1,
+                device_name="cpu",
+                warmup_batches=0,
+            )
+            persisted = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["benchmark_kind"], "held-out-next-token-and-runtime")
+            self.assertEqual(persisted["dataset"]["split_used"], "validation")
+            self.assertEqual(persisted["dataset"]["validation_documents"], 1)
+            self.assertEqual(len(persisted["model"]["checkpoint_sha256"]), 64)
+            self.assertIn("needle-in-a-haystack retrieval", persisted["not_evaluated"])
+            self.assertGreater(persisted["measurements"]["scored_tokens"], 0)
 
 
 if __name__ == "__main__":
