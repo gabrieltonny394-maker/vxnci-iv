@@ -16,6 +16,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from training.data import TokenBlockDataset, load_corpus_records
+from training.dataset_registry import validate_dataset
 from training.model import VxnciForCausalLM, load_model_config
 from training.tokenizer import ByteBPETokenizer
 
@@ -160,6 +161,9 @@ def main() -> None:
     set_seed(args.seed)
     config = load_model_config(args.config)
     tokenizer = ByteBPETokenizer.load(args.tokenizer)
+    dataset_report = validate_dataset(args.data)
+    if not dataset_report["valid"]:
+        raise ValueError("Dataset failed governance validation: " + "; ".join(dataset_report["errors"]))
     train_texts, validation_texts = load_corpus_records(args.data)
     train_data = TokenBlockDataset(train_texts, tokenizer, config.context_length, config.vocab_size)
     validation_data = TokenBlockDataset(validation_texts, tokenizer, config.context_length, config.vocab_size)
@@ -182,6 +186,7 @@ def main() -> None:
         "tokenizer": str(args.tokenizer),
         "corpus": str(args.data),
         "checkpoint_format": "safetensors",
+        "dataset_validation": dataset_report,
     })
     save_checkpoint(model, optimizer, args.output_dir, result)
     print(json.dumps({key: value for key, value in result.items() if key != "history"}, indent=2))
