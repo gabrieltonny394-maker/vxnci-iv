@@ -59,7 +59,7 @@ class TaskEvaluatorTests(unittest.TestCase):
     def test_model_greedy_generation_and_limits(self):
         config = ModelConfig(vocab_size=260, hidden_size=16, num_layers=1,
             num_attention_heads=2, num_key_value_heads=2, intermediate_size=32,
-            context_length=8, max_output_tokens=4)
+            context_length=8, max_output_tokens=8)
         model = VxnciForCausalLM(config).eval()
         prompt = torch.tensor([[65, 66]], dtype=torch.long)
         generated = model.generate(prompt, max_new_tokens=2)
