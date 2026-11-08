@@ -29,17 +29,23 @@ def load_corpus_records(path: str | Path) -> tuple[list[str], list[str]]:
             source = record.get("source")
             license_name = record.get("license")
             split = record.get("split")
+            rights_status = record.get("rights_status", "approved")
             if not isinstance(text, str) or not text.strip():
                 raise ValueError(f"Line {line_number} needs non-empty text")
             if not isinstance(source, str) or not source.strip():
                 raise ValueError(f"Line {line_number} is missing source provenance")
             if not isinstance(license_name, str) or not license_name.strip():
                 raise ValueError(f"Line {line_number} is missing license information")
-            if split not in ("train", "validation"):
-                raise ValueError(f"Line {line_number} split must be train or validation")
+            if split not in ("train", "validation", "held_out", "safety"):
+                raise ValueError(f"Line {line_number} has an unsupported dataset split")
+            if rights_status not in ("approved", "quarantined"):
+                raise ValueError(f"Line {line_number} has an invalid rights_status")
+            # Never feed quarantined, held-out, or safety records to model training.
+            if rights_status != "approved":
+                continue
             if split == "train":
                 train_texts.append(text)
-            else:
+            elif split == "validation":
                 validation_texts.append(text)
     if not train_texts:
         raise ValueError("Corpus contains no training records")
