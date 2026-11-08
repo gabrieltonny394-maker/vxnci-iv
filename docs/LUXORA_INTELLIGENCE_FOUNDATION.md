@@ -236,3 +236,26 @@ A capability is **not launch-ready** merely because a UI control or API endpoint
 
 The user's chosen reference is the capability breadth of a modern lightweight general-purpose AI assistant. This is a benchmark direction, not a promise of parity with Claude or any other vendor. Compare against external models only using named, repeatable benchmarks and equivalent test conditions. Do not select model size, training duration, or infrastructure before assessing lawful data availability and approved compute.
 
+
+
+## 11. Additional benchmark: lightweight ChatGPT model
+
+The user has approved an additional reference point: LUXORA Core should also target the capability breadth of ChatGPT's lightweight/default model for Free users.
+
+As of the November 2026 OpenAI Help Center documentation reviewed for this specification, **GPT-5.6 Luna** is identified as the default model for ChatGPT Free and Go users and as the fastest, lowest-cost model in the GPT-5.6 family. Availability and rollout can change; re-check the official model documentation before making future comparisons.
+
+The target capability areas to evaluate against this reference include:
+- Everyday conversational quality and contextual awareness.
+- General information and question answering.
+- Clear writing, summarization, and information extraction.
+- Mathematics and STEM question handling.
+- Coding assistance, including focused code generation and debugging.
+- Image understanding where supported by the model and product.
+- Reasoning on harder questions, with performance measured separately from ordinary fast responses.
+- Tool-assisted information retrieval and task workflows where supported by the surrounding product.
+
+The reference is not a claim that GPT-5.6 Luna exposes every ChatGPT product feature natively. ChatGPT features such as web search, file handling, voice, image generation, and task execution may depend on separate models, tools, product orchestration, account access, and usage limits. LUXORA must make the same distinction between model-native capabilities and platform-provided services.
+
+### Benchmark rule
+
+Use both (a) the modern lightweight Claude reference already recorded in this document and (b) the current lightweight ChatGPT reference. Build an internal capability matrix and repeatable test suite. Do not claim parity based on feature checklists alone; compare task success, factuality, robustness, latency, and reliability under documented equivalent conditions. External model names are reference points only and do not imply access to their proprietary weights or training data.
