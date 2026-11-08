@@ -31,6 +31,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_tokenizer.py' -v
       - name: Run model tests
         run: python -m unittest discover -s tests -p 'test_model.py' -v
+      - name: Run dataset registry tests
+        run: python -m unittest discover -s tests -p 'test_dataset_registry.py' -v
       - name: Run training pipeline tests
         run: python -m unittest discover -s tests -p 'test_training.py' -v
       - name: Run benchmark harness tests
