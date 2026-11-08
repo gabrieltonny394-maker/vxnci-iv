@@ -37,6 +37,19 @@ class TrainingDataTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "provenance"):
                 load_corpus_records(path)
 
+    def test_training_loader_excludes_held_out_safety_and_quarantined_records(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_corpus(directory, [
+                {"text": "approved train", "source": "author", "license": "original", "split": "train", "rights_status": "approved"},
+                {"text": "approved validation", "source": "author", "license": "original", "split": "validation", "rights_status": "approved"},
+                {"text": "held out secret", "source": "author", "license": "original", "split": "held_out", "rights_status": "approved"},
+                {"text": "safety test", "source": "author", "license": "original", "split": "safety", "rights_status": "approved"},
+                {"text": "unapproved partner data", "source": "partner", "license": "unknown", "split": "train", "rights_status": "quarantined"},
+            ])
+            train, validation = load_corpus_records(path)
+            self.assertEqual(train, ["approved train"])
+            self.assertEqual(validation, ["approved validation"])
+
     def test_missing_validation_split_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_corpus(directory, [
