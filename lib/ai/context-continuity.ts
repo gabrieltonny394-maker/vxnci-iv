@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../contracts";
+import type { ChatMessage } from "./contracts";
 
 export type ConversationRole = ChatMessage["role"];
 export interface StoredConversationMessage extends ChatMessage {
@@ -106,7 +106,7 @@ export async function prepareConversationContext(input: {
   const recent = uncovered.slice(-recentCount);
   const older = uncovered.slice(0, Math.max(0, uncovered.length - recent.length));
   const summaryMessage = (): ChatMessage[] => summary
-    ? [{ role: "system", content: "Continuation summary of earlier conversation turns (derived context, not user-authored):\\n" + summary.content }]
+    ? [{ role: "system", content: "Continuation summary of earlier conversation turns (derived context, not user-authored):\n" + summary.content }]
     : [];
   const total = (messages: ChatMessage[]) => countMessages(messages, count);
   const fullPrompt = [...instructions, ...summaryMessage(), ...fullHistory, currentMessage];
@@ -134,7 +134,6 @@ export async function prepareConversationContext(input: {
     throw new ContextContinuityError("The recent conversation and required instructions exceed this model's available context. Original history is preserved.", "CONTEXT_TOO_SMALL");
   }
 
-  const state: ContextState = "SUMMARIZING";
   let summaryText: string;
   try {
     summaryText = (await summarizer.summarize({
