@@ -111,3 +111,17 @@ The feature is not complete until automated tests demonstrate:
 This document records the required product behaviour. It does not claim that automatic compaction, durable conversation history, retrieval, or a working model runtime is already implemented. The current chat interface and AI runtime are still foundation-stage. Implementation must be verified in code and CI before this feature is described as available.
 
 No paid upgrade, hosted storage, external model API, paid inference service or public deployment is authorised by this specification.
+
+## 11. Customer-owned conversation lifecycle
+
+A conversation remains the same customer-owned conversation for as long as the customer chooses to keep using it. Reaching a model context limit must never, by itself, end the conversation or require migration.
+
+- The conversation ID and original message history remain continuous across any number of successful context-compaction cycles.
+- Context refresh is an internal runtime operation, not a new chat and not a change to the customer's conversation identity.
+- The customer may explicitly choose to migrate a conversation to a new chat. Migration must carry a verified continuation package containing the relevant summary, key decisions, constraints, important references and unresolved tasks. Where appropriate, the customer must be able to review what will be carried over.
+- Migration must not silently delete or overwrite the source conversation. The original remains accessible unless the customer separately chooses to delete it.
+- The customer may also choose to end or delete a conversation. Apply the product's retention and deletion policy, including deletion of derived summaries and indexes.
+- If continuity cannot safely be maintained because of a genuine technical failure, explain the failure and preserve the source history. Do not label a forced restart as a normal context refresh.
+- Product copy must distinguish **refreshing context** (automatic, same chat) from **migrating chat** (customer-initiated, new chat).
+
+**Acceptance test:** Send a conversation through repeated context-budget thresholds. Confirm that the same conversation ID remains active, the complete original history remains accessible, and no migration prompt or new-chat requirement appears solely because a context window was reached. Then explicitly migrate it and verify that the new chat receives the approved continuation package while the source chat remains intact.
