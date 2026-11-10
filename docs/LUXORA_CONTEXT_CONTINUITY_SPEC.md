@@ -125,3 +125,33 @@ A conversation remains the same customer-owned conversation for as long as the c
 - Product copy must distinguish **refreshing context** (automatic, same chat) from **migrating chat** (customer-initiated, new chat).
 
 **Acceptance test:** Send a conversation through repeated context-budget thresholds. Confirm that the same conversation ID remains active, the complete original history remains accessible, and no migration prompt or new-chat requirement appears solely because a context window was reached. Then explicitly migrate it and verify that the new chat receives the approved continuation package while the source chat remains intact.
+
+## 12. Resilient long-running tasks and server failures
+
+Conversation continuity alone is not enough. A customer may also have a multi-step task in progress (for example, inspecting many repository files, analysing documents, or preparing a project). A transient server error must not silently destroy that task's progress.
+
+### Required behaviour
+
+- **Persist task progress:** Track a task ID, status, completed steps, pending steps and safe checkpoints. Do not rely on the visible chat transcript as the only record of task progress.
+- **Resume instead of restart:** When a request fails transiently, resume from the last verified checkpoint. Do not repeat completed file fetches, edits, uploads or other side effects unnecessarily.
+- **Retry safely:** Use bounded retries with exponential backoff and jitter for retryable failures such as temporary network errors, rate limits and server errors. Respect Retry-After when supplied. Do not retry permanent validation, permission or authentication failures as if they were transient.
+- **Idempotency:** Before retrying an operation that may have changed external state, verify its outcome or use an idempotency key where supported. Never blindly repeat a non-idempotent action.
+- **Batch intelligently:** Prefer supported batch/list operations for many related resources. If individual retrieval is necessary, limit concurrency, deduplicate requests and record each result independently.
+- **Report exact progress:** Show which steps completed, which failed, and what remains. Never label a partially completed task as complete.
+- **Recover clearly:** Replace generic error-only experiences with a plain-language explanation, a retry/resume action when safe, and a reference/support identifier where available. Do not expose internal secrets or sensitive diagnostics.
+- **Protect user work:** Preserve drafts, uploaded inputs, fetched results and task checkpoints according to the product's retention and deletion rules.
+- **Keep the conversation alive:** A task failure must not force the customer to migrate chats. The user should be able to discuss the failure and resume the task in the same conversation.
+- **Ask before repeating risky actions:** If it is unclear whether a side effect occurred, explain the uncertainty and ask the customer before attempting it again.
+
+### Acceptance tests
+
+1. A multi-file retrieval completes some items, then receives a simulated transient server error. Resume only the missing items.
+2. Repeated requests for the same file are deduplicated where safe.
+3. A rate-limited request respects the server's retry delay.
+4. Authentication and permission errors stop retrying and give a clear explanation.
+5. A write operation with an uncertain outcome is checked before any retry.
+6. A task survives a page refresh or temporary disconnect when durable task storage is available.
+7. The user can continue discussing and resuming the task in the same conversation.
+8. The interface reports partial completion accurately and never invents successful results.
+
+This requirement does not authorise a paid queue, hosted service or external provider. The task store and execution infrastructure must be selected within the project's approved cost and privacy boundaries.
