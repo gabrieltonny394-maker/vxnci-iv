@@ -102,31 +102,33 @@ export async function prepareConversationContext(input: {
   const covered = summary?.coveredThroughSequence ?? 0;
   const uncovered = history.filter((message) => message.sequence > covered);
   const recentCount = Math.max(2, budget.recentMessageCount ?? 8);
+  const fullHistory = asChatMessages(uncovered);
   const recent = uncovered.slice(-recentCount);
   const older = uncovered.slice(0, Math.max(0, uncovered.length - recent.length));
   const summaryMessage = (): ChatMessage[] => summary
-    ? [{ role: "system", content: "Continuation summary of earlier conversation turns (derived context, not user-authored):\n" + summary.content }]
+    ? [{ role: "system", content: "Continuation summary of earlier conversation turns (derived context, not user-authored):\\n" + summary.content }]
     : [];
+  const total = (messages: ChatMessage[]) => countMessages(messages, count);
+  const fullPrompt = [...instructions, ...summaryMessage(), ...fullHistory, currentMessage];
+  const fullTokens = total(fullPrompt);
+  const warningAt = budget.warningAtRatio ?? 0.75;
+  if (fullTokens <= available) {
+    return {
+      messages: fullPrompt,
+      state: fullTokens / available >= warningAt ? "APPROACHING_LIMIT" : "NORMAL",
+      estimatedInputTokens: fullTokens,
+      contextLimit: budget.contextLimit,
+      compacted: Boolean(summary),
+      summaryVersion: summary?.version ?? null,
+    };
+  }
+
   const build = (): ChatMessage[] => [
     ...instructions,
     ...summaryMessage(),
     ...asChatMessages(recent),
     currentMessage,
   ];
-  const total = (messages: ChatMessage[]) => countMessages(messages, count);
-  const initial = build();
-  const initialTokens = total(initial);
-  const warningAt = budget.warningAtRatio ?? 0.75;
-  if (initialTokens <= available) {
-    return {
-      messages: initial,
-      state: initialTokens / available >= warningAt ? "APPROACHING_LIMIT" : "NORMAL",
-      estimatedInputTokens: initialTokens,
-      contextLimit: budget.contextLimit,
-      compacted: Boolean(summary),
-      summaryVersion: summary?.version ?? null,
-    };
-  }
 
   if (older.length === 0) {
     throw new ContextContinuityError("The recent conversation and required instructions exceed this model's available context. Original history is preserved.", "CONTEXT_TOO_SMALL");
