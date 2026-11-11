@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidApiKey } from "../../../../lib/ai/api-auth";
 import { modelRouter } from "../../../../lib/ai/model-router";
+import { ensureConfiguredInferenceModelRegistered } from "../../../../lib/ai/inference/runtime-bootstrap";
 
 export const runtime = "nodejs";
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   if (!isValidApiKey(request)) {
     return NextResponse.json(
       {
@@ -17,8 +18,8 @@ export function GET(request: NextRequest) {
     );
   }
 
-  // Providers enter this registry through a ready adapter. Do not advertise
-  // planned tiers, manifest-only models, or models without an inference backend.
+  await ensureConfiguredInferenceModelRegistered();
+  // Only a model with a matching, healthy inference service can enter this list.
   const models = modelRouter.listProviders().map((provider) => ({
     id: provider.modelId,
     object: "model",
