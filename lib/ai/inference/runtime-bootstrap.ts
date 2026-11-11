@@ -1,11 +1,14 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { modelRouter } from "../model-router";
 import { registerInferenceModel } from "./engine";
 import { HttpInferenceBackend } from "./http-backend";
 import type { ModelArtifactManifest } from "./types";
 
 let registrationInProgress: Promise<boolean> | undefined;
+
+function resolveConfigPath(): string {
+  return `${process.cwd()}/model/vxnci-1-tiny/config.json`;
+}
 
 /**
  * Attach the configured local/self-hosted runtime only after its health
@@ -25,18 +28,18 @@ export async function ensureConfiguredInferenceModelRegistered(): Promise<boolea
   if (registrationInProgress) return registrationInProgress;
   registrationInProgress = (async () => {
     try {
-      const configPath = resolve(process.cwd(), process.env.LUXORA_MODEL_CONFIG_PATH ?? "model/vxnci-1-tiny/config.json");
-      const raw = JSON.parse(await readFile(configPath, "utf8")) as {
+      const raw = JSON.parse(await readFile(resolveConfigPath(), "utf8")) as {
         modelId?: string;
         architecture?: string;
         components?: { tokenizer?: string };
         parameters?: { contextLength?: number; maxOutputTokens?: number };
       };
+      const parameters = raw.parameters;
       const modelId = configuredModelId ?? raw.modelId;
       if (!modelId || raw.modelId !== modelId ||
-          !raw.architecture || !raw.components?.tokenizer ||
-          !Number.isInteger(raw.parameters?.contextLength) ||
-          !Number.isInteger(raw.parameters?.maxOutputTokens)) {
+          !raw.architecture || !raw.components?.tokenizer || !parameters ||
+          !Number.isInteger(parameters.contextLength) ||
+          !Number.isInteger(parameters.maxOutputTokens)) {
         return false;
       }
       if (modelRouter.listProviders().some((p) => p.modelId === modelId)) return true;
@@ -50,8 +53,8 @@ export async function ensureConfiguredInferenceModelRegistered(): Promise<boolea
         architecture: raw.architecture,
         tokenizer: raw.components.tokenizer,
         weightsPath: `artifacts/${modelId}/checkpoint/model.safetensors`,
-        contextLength: raw.parameters.contextLength as number,
-        maxOutputTokens: raw.parameters.maxOutputTokens as number,
+        contextLength: parameters.contextLength as number,
+        maxOutputTokens: parameters.maxOutputTokens as number,
       };
       registerInferenceModel({
         registry: { register: (provider) => modelRouter.register(provider) },
