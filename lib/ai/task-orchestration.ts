@@ -85,7 +85,7 @@ export async function orchestrateTask<T>(
     verify: request.verify,
   });
 
-  if (outcome.status !== "COMPLETED" || outcome.result === undefined) {
+  if (outcome.status !== "COMPLETED") {
     return outcome;
   }
 
@@ -93,7 +93,7 @@ export async function orchestrateTask<T>(
     await request.checkpoints.save(request.scope, {
       taskId: request.taskId,
       status: "COMPLETED",
-      result: outcome.result,
+      result: outcome.result as T,
       verified: true,
     });
     return outcome;
