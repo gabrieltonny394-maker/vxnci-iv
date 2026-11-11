@@ -43,6 +43,12 @@ export default function ChatShell() {
           <span>New chat</span>
         </button>
 
+        <a className="live-preview-nav" href="/preview">
+          <span aria-hidden="true">▣</span>
+          <span>Live Preview</span>
+          <span className="preview-nav-badge">NEW</span>
+        </a>
+
         <div className="history-area">
           <p className="sidebar-label">Your conversations</p>
           <div className="history-empty">
