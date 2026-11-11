@@ -1,0 +1,32 @@
+const PREVIEW_CSP = [
+  "default-src 'none'",
+  "script-src 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com",
+  "style-src 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+  "font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com data:",
+  "img-src data: blob:",
+  "connect-src 'none'",
+  "form-action 'none'",
+  "base-uri 'none'",
+  "object-src 'none'",
+  "frame-src 'none'"
+].join("; ");
+
+/**
+ * Adds a restrictive policy to a user-authored HTML document before it is
+ * rendered inside an iframe sandboxed without same-origin privileges.
+ */
+export function createSecurePreviewDocument(source: string): string {
+  const policy = `<meta http-equiv="Content-Security-Policy" content="${PREVIEW_CSP}">`;
+  const headTag = /<head(?:\s[^>]*)?>/i;
+
+  if (headTag.test(source)) {
+    return source.replace(headTag, (head) => `${head}\n${policy}`);
+  }
+
+  const htmlTag = /<html(?:\s[^>]*)?>/i;
+  if (htmlTag.test(source)) {
+    return source.replace(htmlTag, (html) => `${html}\n<head>${policy}</head>`);
+  }
+
+  return `<!doctype html><html><head><meta charset="utf-8">${policy}</head><body>${source}</body></html>`;
+}
