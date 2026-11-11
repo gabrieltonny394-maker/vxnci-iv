@@ -30,7 +30,14 @@ export interface ModelAdapter {
 
 export class ModelNotConfiguredError extends Error {
   constructor() {
-    super("No VXNCI model runtime is configured.");
+    super("No LUXORA AI model runtime is configured.");
     this.name = "ModelNotConfiguredError";
+  }
+}
+
+export class ModelNotFoundError extends Error {
+  constructor(readonly modelId: string) {
+    super(`The requested model "${modelId}" is not available.`);
+    this.name = "ModelNotFoundError";
   }
 }
