@@ -25,7 +25,8 @@ function supportsToolPlanning(adapter: unknown): adapter is ToolPlanningModelAda
 }
 
 /**
- * Live chat entry point. Tool use is enabled only when:
+ * Live chat entry point. A validated requested model takes precedence over the
+ * configured default. Tool use is enabled only when:
  * 1) the selected model adapter implements structured planning,
  * 2) server bootstrap has registered at least one server-owned tool, and
  * 3) the route supplies trusted per-request identity, policy and checkpoint dependencies.
@@ -36,9 +37,10 @@ export async function runChat(
   input: unknown,
   signal?: AbortSignal,
   toolContext?: ToolInvocationContext | null,
+  requestedModelId?: string,
 ): Promise<ModelResponse> {
   const messages = validateChatMessages(input);
-  const modelId = process.env.VXNCI_DEFAULT_MODEL;
+  const modelId = requestedModelId ?? process.env.VXNCI_DEFAULT_MODEL;
 
   if (!modelId) {
     throw new Error("VXNCI_MODEL_NOT_CONFIGURED");
