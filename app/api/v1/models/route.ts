@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidApiKey } from "@/lib/ai/api-auth";
-import { modelRouter } from "@/lib/ai/model-router";
+import { isValidApiKey } from "../../../../lib/ai/api-auth";
+import { modelRouter } from "../../../../lib/ai/model-router";
 
 export const runtime = "nodejs";
 
