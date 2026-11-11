@@ -41,7 +41,7 @@ describe("GET /api/v1/models", () => {
     });
   });
 
-  it("advertises only registered adapters and labels them as registered", async () => {
+  it("advertises only registered ready adapters", async () => {
     providerRegistry.register({
       id: "luxora-local",
       name: "LUXORA Local",
@@ -60,7 +60,7 @@ describe("GET /api/v1/models", () => {
           owned_by: "luxora-local",
           provider_name: "LUXORA Local",
           provider_kind: "local",
-          status: "registered",
+          status: "ready",
         },
       ],
     });
