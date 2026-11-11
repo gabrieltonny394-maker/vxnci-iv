@@ -1,4 +1,4 @@
-import type { ChatMessage } from "./contracts";
+import type { ChatMessage, ModelAdapter } from "./contracts";
 import type { ExecutionOutcome } from "./execution-contract";
 import {
   ToolRegistry,
@@ -88,3 +88,7 @@ export async function runPlannedTurn(input: {
 
   return { type: "tool_result", outcome };
 }
+
+
+/** A model provider may opt into structured tool planning by implementing this interface. */
+export interface ToolPlanningModelAdapter extends ModelAdapter, ToolPlanner {}
