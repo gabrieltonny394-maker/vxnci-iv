@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-vi.mock("@/lib/ai/api-auth", () => ({
+vi.mock("../../../../lib/ai/api-auth", () => ({
   isValidApiKey: vi.fn(() => true),
 }));
 
-import { isValidApiKey } from "@/lib/ai/api-auth";
+import { isValidApiKey } from "../../../../lib/ai/api-auth";
 import { GET } from "./route";
-import { providerRegistry } from "@/lib/ai/providers/provider-registry";
-import type { ModelAdapter } from "@/lib/ai/contracts";
+import { providerRegistry } from "../../../../lib/ai/providers/provider-registry";
+import type { ModelAdapter } from "../../../../lib/ai/contracts";
 
 function request(): NextRequest {
   return new NextRequest("http://localhost/api/v1/models", {
