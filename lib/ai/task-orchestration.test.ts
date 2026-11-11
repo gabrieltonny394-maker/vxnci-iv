@@ -168,3 +168,27 @@ describe("LUXORA task orchestration", () => {
     expect(execute).not.toHaveBeenCalled();
   });
 });
+
+
+describe("void task checkpointing", () => {
+  it("persists a verified task even when its action returns undefined", async () => {
+    const checkpoints = makeStore();
+
+    const outcome = await orchestrateTask<void>({
+      taskId: "refresh-index",
+      scope,
+      authorization: { authorize: async () => ({ allowed: true }) },
+      checkpoints,
+      execute: async () => undefined,
+      verify: async () => true,
+    });
+
+    expect(outcome.status).toBe("COMPLETED");
+    expect(checkpoints.save).toHaveBeenCalledWith(scope, {
+      taskId: "refresh-index",
+      status: "COMPLETED",
+      result: undefined,
+      verified: true,
+    });
+  });
+});
