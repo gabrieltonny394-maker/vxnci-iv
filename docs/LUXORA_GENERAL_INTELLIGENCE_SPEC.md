@@ -79,13 +79,17 @@ LUXORA AI must be an executor, not merely a comforter. When a user requests a ta
 
 The detailed requirements, permission rules, blocker handling and evaluation suite are defined in [LUXORA_EXECUTION_FIRST_BEHAVIOUR_SPEC.md](./LUXORA_EXECUTION_FIRST_BEHAVIOUR_SPEC.md). This behaviour applies to Core, Nova, Titan and Apex; higher tiers may offer greater execution capability, but no tier may fabricate actions or substitute empty reassurance for work.
 
-## 8. Scope and honest status
+## 8. Live preview and code execution experience
+
+Live Preview is a standard platform capability across Core, Nova, Titan and Apex. Users should be able to open supported code in a rendered, interactive preview, request edits, and inspect the updated result without leaving the conversation. This is provided by a secure platform preview runtime, not by model text generation alone. Tier differences may affect usage limits and project complexity, but must not remove basic preview access. The implementation and security acceptance criteria are defined in [LUXORA_LIVE_PREVIEW_SPEC.md](./LUXORA_LIVE_PREVIEW_SPEC.md). This is an approved product requirement, not a claim that the preview runtime is already implemented.
+
+## 9. Scope and honest status
 
 The repository currently contains a small Transformer architecture, tokenizer implementation and a local training pipeline foundation. This does **not** mean a capable assistant has been trained. A suitable, reviewed corpus, actual training run, checkpoint evaluation and inference backend are still required.
 
 This specification does not authorise paid datasets, paid compute, hosted GPU services, external AI APIs, public deployment or billing. Those require separate explicit approval.
 
-## 9. Product naming
+## 10. Product naming
 
 Use **LUXORA AI / LUXORA INTELLIGENCE** for the current AI brand direction. Keep internal engineering identifiers such as `vxnci-1-tiny` where they are already used in code and artifacts until a deliberate technical rename is planned. Product-facing model family names currently under consideration/definition are:
 - **LUXORA Core** — Entry
