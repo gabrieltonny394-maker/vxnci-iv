@@ -4,6 +4,9 @@ import { NextRequest } from "next/server";
 vi.mock("../../../../lib/ai/api-auth", () => ({
   isValidApiKey: vi.fn(() => true),
 }));
+vi.mock("../../../../lib/ai/inference/runtime-bootstrap", () => ({
+  ensureConfiguredInferenceModelRegistered: vi.fn().mockResolvedValue(false),
+}));
 
 import { isValidApiKey } from "../../../../lib/ai/api-auth";
 import { GET } from "./route";
@@ -32,8 +35,8 @@ describe("GET /api/v1/models", () => {
     vi.mocked(isValidApiKey).mockReturnValue(true);
   });
 
-  it("returns an empty catalogue when no model adapters are registered", async () => {
-    const response = GET(request());
+  it("returns an empty catalogue when no healthy model runtime is registered", async () => {
+    const response = await GET(request());
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       object: "list",
@@ -49,7 +52,7 @@ describe("GET /api/v1/models", () => {
       adapter: adapter("luxora-local", "luxora-core-experimental"),
     });
 
-    const response = GET(request());
+    const response = await GET(request());
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       object: "list",
@@ -74,22 +77,18 @@ describe("GET /api/v1/models", () => {
       adapter: adapter("experimental-provider", "vxnci-1-tiny"),
     });
 
-    const response = GET(request());
+    const response = await GET(request());
     const body = await response.json();
 
-    expect(body.data.map((model: { id: string }) => model.id)).toEqual([
-      "vxnci-1-tiny",
-    ]);
+    expect(body.data.map((model: { id: string }) => model.id)).toEqual(["vxnci-1-tiny"]);
     expect(body.data.some((model: { id: string }) =>
       ["luxora-core", "luxora-nova", "luxora-titan", "luxora-apex"].includes(model.id)
     )).toBe(false);
   });
 
-  it("requires a valid API key", () => {
+  it("requires a valid API key", async () => {
     vi.mocked(isValidApiKey).mockReturnValue(false);
-
-    const response = GET(request());
-
+    const response = await GET(request());
     expect(response.status).toBe(401);
   });
 });
