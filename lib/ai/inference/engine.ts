@@ -1,4 +1,5 @@
 import type { ModelAdapter, ModelRequest, ModelResponse } from "../contracts";
+import type { ProviderKind, ProviderRegistry } from "../providers/provider-registry";
 import {
   InferenceConfigurationError,
   InferenceRuntimeUnavailableError,
@@ -83,10 +84,50 @@ export class VxnciInferenceEngine {
   }
 }
 
-export function createInferenceAdapter(engine: VxnciInferenceEngine): ModelAdapter {
+export function createInferenceAdapter(
+  engine: VxnciInferenceEngine,
+  providerId = "vxnci-intelligence",
+): ModelAdapter {
+  if (!engine.ready) throw new InferenceRuntimeUnavailableError();
+  if (!providerId.trim()) {
+    throw new InferenceConfigurationError("Inference provider id must be non-empty.");
+  }
+
   return {
-    providerId: "vxnci-intelligence",
+    providerId,
     modelId: engine.modelId,
     generate: (request) => engine.generate(request),
   };
+}
+
+export interface RegisterInferenceModelOptions {
+  registry: Pick<ProviderRegistry, "register">;
+  providerId: string;
+  providerName: string;
+  providerKind: ProviderKind;
+  manifest: ModelArtifactManifest;
+  backend?: InferenceBackend;
+}
+
+/**
+ * The only supported bridge from the generic inference engine into the
+ * production provider catalogue. Registration fails closed unless a matching
+ * inference backend is attached. The registry therefore never advertises a
+ * manifest-only model as available.
+ */
+export function registerInferenceModel(
+  options: RegisterInferenceModelOptions,
+): VxnciInferenceEngine {
+  const engine = new VxnciInferenceEngine(options.manifest, options.backend);
+  if (!engine.ready) throw new InferenceRuntimeUnavailableError();
+
+  const adapter = createInferenceAdapter(engine, options.providerId);
+  options.registry.register({
+    id: options.providerId,
+    name: options.providerName,
+    kind: options.providerKind,
+    adapter,
+  });
+
+  return engine;
 }
