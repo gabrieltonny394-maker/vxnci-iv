@@ -68,6 +68,11 @@ export class ToolRegistry {
     );
   }
 
+  /** Server bootstrap and isolated tests may clear registrations. Never expose this to clients. */
+  clear(): void {
+    this.definitions.clear();
+  }
+
   /** Only safe metadata is exposed to a future model planner. */
   listForPlanner(): ToolPromptDefinition[] {
     return [...this.definitions.values()].map(({ name, description, inputSchema }) => ({
