@@ -120,3 +120,7 @@ export class ToolRegistry {
     });
   }
 }
+
+
+/** Shared server-only registry. Register concrete tools during trusted server bootstrap. */
+export const serverToolRegistry = new ToolRegistry();
