@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import threading
 from dataclasses import dataclass
@@ -51,8 +52,8 @@ def load_runtime(config_path: str | Path, tokenizer_path: str | Path,
     validation = training_state.get("dataset_validation")
     if not isinstance(validation, dict) or validation.get("valid") is not True:
         raise ValueError("Checkpoint dataset provenance validation is missing or unsuccessful")
-    if not isinstance(training_state.get("validation_loss"), (int, float)):
-        raise ValueError("Checkpoint validation loss is required")
+    if not isinstance(training_state.get("validation_loss"), (int, float)) or not math.isfinite(training_state["validation_loss"]):
+        raise ValueError("Checkpoint validation loss must be a finite number")
 
     weights = Path(checkpoint_path)
     if not weights.is_file():
@@ -149,6 +150,8 @@ def make_handler(runtime: LoadedRuntime, token: str):
                 if length < 1 or length > 1_048_576:
                     raise ValueError("Request body size is invalid")
                 payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise ValueError("Request body must be a JSON object")
                 result = generate(runtime, payload.get("messages"), payload.get("max_output_tokens", 128))
                 self._json(200, result)
             except (ValueError, json.JSONDecodeError) as exc:
@@ -165,7 +168,7 @@ def make_handler(runtime: LoadedRuntime, token: str):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Serve a trained VXNCI-1 Tiny checkpoint locally")
     parser.add_argument("--config", default="model/vxnci-1-tiny/config.json")
-    parser.add_argument("--tokenizer", default="artifacts/vxnci-1-tiny/tokenizer/tokenizer.json")
+    parser.add_argument("--tokenizer", default="artifacts/vxnci-1-tiny/tokenizer.json")
     parser.add_argument("--checkpoint", default="artifacts/vxnci-1-tiny/checkpoint/model.safetensors")
     parser.add_argument("--training-state", default="artifacts/vxnci-1-tiny/checkpoint/training_state.json")
     parser.add_argument("--host", default="127.0.0.1")
