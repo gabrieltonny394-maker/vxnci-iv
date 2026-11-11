@@ -17,15 +17,15 @@ export function GET(request: NextRequest) {
     );
   }
 
-  // The registry is the source of truth. Do not advertise planned tiers or
-  // model IDs that do not have a deliberately registered adapter.
+  // Providers enter this registry through a ready adapter. Do not advertise
+  // planned tiers, manifest-only models, or models without an inference backend.
   const models = modelRouter.listProviders().map((provider) => ({
     id: provider.modelId,
     object: "model",
     owned_by: provider.id,
     provider_name: provider.name,
     provider_kind: provider.kind,
-    status: "registered",
+    status: "ready",
   }));
 
   return NextResponse.json({ object: "list", data: models });
