@@ -128,4 +128,55 @@ describe("live chat tool-planning integration", () => {
     expect(execute).not.toHaveBeenCalled();
     expect(response.text).toBe("Fallback answer");
   });
+  it("uses the explicitly requested model instead of the configured default", async () => {
+    const defaultGenerate = vi.fn(async (): Promise<ModelResponse> => ({
+      text: "Default model response",
+      modelId: "default-model",
+    }));
+    const requestedGenerate = vi.fn(async (request: ModelRequest): Promise<ModelResponse> => ({
+      text: "Requested model response",
+      modelId: request.modelId,
+    }));
+
+    const defaultAdapter = { providerId: "default-provider", modelId: "default-model", generate: defaultGenerate };
+    const requestedAdapter = { providerId: "requested-provider", modelId: "requested-model", generate: requestedGenerate };
+
+    providerRegistry.register({ id: defaultAdapter.providerId, name: "Default runtime", kind: "test", adapter: defaultAdapter });
+    providerRegistry.register({ id: requestedAdapter.providerId, name: "Requested runtime", kind: "test", adapter: requestedAdapter });
+    process.env.VXNCI_DEFAULT_MODEL = "default-model";
+
+    const response = await runChat(
+      [{ role: "user", content: "Use the requested model" }],
+      undefined,
+      undefined,
+      "requested-model",
+    );
+
+    expect(defaultGenerate).not.toHaveBeenCalled();
+    expect(requestedGenerate).toHaveBeenCalledOnce();
+    expect(requestedGenerate.mock.calls[0][0].modelId).toBe("requested-model");
+    expect(response.modelId).toBe("requested-model");
+  });
+
+  it("rejects an unknown explicitly requested model instead of silently using the default", async () => {
+    const generate = vi.fn(async (): Promise<ModelResponse> => ({
+      text: "Should not run",
+      modelId: "default-model",
+    }));
+    const adapter = { providerId: "default-provider", modelId: "default-model", generate };
+    providerRegistry.register({ id: adapter.providerId, name: "Default runtime", kind: "test", adapter });
+    process.env.VXNCI_DEFAULT_MODEL = "default-model";
+
+    await expect(
+      runChat(
+        [{ role: "user", content: "Use a missing model" }],
+        undefined,
+        undefined,
+        "missing-model",
+      ),
+    ).rejects.toMatchObject({ name: "ModelNotFoundError", modelId: "missing-model" });
+
+    expect(generate).not.toHaveBeenCalled();
+  });
+
 });
