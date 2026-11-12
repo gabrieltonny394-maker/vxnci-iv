@@ -98,3 +98,19 @@ The feature is not complete until tests demonstrate:
 ## 9. Scope and honest status
 
 This document establishes a product requirement and implementation target. It does not mean that the live preview runtime, sandbox, editor or user interface has already been built. No public deployment, paid compute, paid hosting, paid APIs or external service is authorised by this specification.
+
+## 10. Implementation progress — first HTML milestone
+
+The first HTML-only workspace is now implemented in the development branch:
+- Route: `/preview`.
+- Editable single-file HTML source with a runnable preview.
+- Mobile and desktop viewport modes.
+- Manual run/refresh and reset-to-demo controls.
+- A small interactive dashboard starter project.
+- Runtime error reporting for uncaught script errors and unhandled promise rejections.
+- Preview rendered in an iframe sandbox with scripts enabled but same-origin access withheld.
+- A restrictive Content Security Policy blocks network connections, form submissions, nested frames, workers and unapproved resource types. The Tailwind CDN, Google Fonts and Font Awesome CDN used by the supplied example are explicitly allowed for script/style/font loading.
+
+**Current limitations:** this is a first client-side HTML/CSS/JavaScript milestone, not a full arbitrary-code execution service. It does not run Node.js, package scripts, backend services or framework builds. It does not yet persist projects or revisions, connect model edits to the editor, provide a complete console/network inspector, or offer deployment. Browser-level penetration testing and manual device testing remain outstanding. Do not treat the iframe as a server-side sandbox for untrusted packages or backend code.
+
+CI run [43161523937](https://github.com/gabrieltonny394-maker/vxnci-iv/actions/runs/43161523937) completed successfully for both the application build/tests and Python model tests. This verifies compilation and automated tests; it is not a substitute for browser security review or deployed-device validation.
