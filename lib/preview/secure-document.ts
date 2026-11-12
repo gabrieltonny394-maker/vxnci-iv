@@ -8,25 +8,39 @@ const PREVIEW_CSP = [
   "form-action 'none'",
   "base-uri 'none'",
   "object-src 'none'",
-  "frame-src 'none'"
+  "frame-src 'none'",
+  "worker-src 'none'",
+  "media-src data: blob:",
+  "manifest-src 'none'"
 ].join("; ");
 
+const DIAGNOSTICS_SCRIPT = `<script>
+(function () {
+  function report(message) {
+    try { parent.postMessage({ type: "luxora-preview-error", message: String(message).slice(0, 500) }, "*"); }
+    catch (_) {}
+  }
+  window.addEventListener("error", function (event) { report(event.message || "Script execution error"); });
+  window.addEventListener("unhandledrejection", function (event) {
+    report(event.reason && event.reason.message ? event.reason.message : event.reason || "Unhandled promise rejection");
+  });
+})();
+</script>`;
+
 /**
- * Adds a restrictive policy to a user-authored HTML document before it is
- * rendered inside an iframe sandboxed without same-origin privileges.
+ * Adds a restrictive policy and lightweight runtime diagnostics before user
+ * scripts. The parent must use sandbox="allow-scripts" without allow-same-origin.
  */
 export function createSecurePreviewDocument(source: string): string {
   const policy = `<meta http-equiv="Content-Security-Policy" content="${PREVIEW_CSP}">`;
   const headTag = /<head(?:\s[^>]*)?>/i;
+  const htmlTag = /<html(?:\s[^>]*)?>/i;
 
   if (headTag.test(source)) {
-    return source.replace(headTag, (head) => `${head}\n${policy}`);
+    return source.replace(headTag, head => `${head}\n${policy}${DIAGNOSTICS_SCRIPT}`);
   }
-
-  const htmlTag = /<html(?:\s[^>]*)?>/i;
   if (htmlTag.test(source)) {
-    return source.replace(htmlTag, (html) => `${html}\n<head>${policy}</head>`);
+    return source.replace(htmlTag, html => `${html}\n<head><meta charset="utf-8">${policy}${DIAGNOSTICS_SCRIPT}</head>`);
   }
-
-  return `<!doctype html><html><head><meta charset="utf-8">${policy}</head><body>${source}</body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8">${policy}${DIAGNOSTICS_SCRIPT}</head><body>${source}</body></html>`;
 }
