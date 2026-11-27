@@ -45,7 +45,7 @@ async function checkHealth() {
     if (!response.ok) throw new Error("Health check failed");
     const data = await response.json();
     if (data.providerConfigured) {
-      setStatus("Gemini connected", "ready");
+      setStatus("Gemini key configured", "ready");
     } else {
       setStatus("Model key not configured", "offline");
     }
