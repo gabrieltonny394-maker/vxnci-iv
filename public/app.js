@@ -118,4 +118,3 @@ newChatButton.addEventListener("click", () => {
 });
 
 checkHealth();
-input.focus();
