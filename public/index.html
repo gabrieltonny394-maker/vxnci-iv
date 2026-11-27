@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d1b">
+  <meta name="description" content="LUXORA AI — your space to think, create and solve.">
+  <title>LUXORA AI</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="LUXORA AI home">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span class="brand-name">LUXORA <strong>AI</strong></span>
+      </a>
+      <div class="topbar-actions">
+        <span id="connection-status" class="connection-status" role="status">Checking model…</span>
+        <button id="new-chat" class="new-chat-button" type="button">New chat</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="intro" id="intro">
+        <p class="eyebrow">LUXORA INTELLIGENCE</p>
+        <h1>What are we<br><span>working on today?</span></h1>
+        <p class="intro-copy">Think clearly. Explore ideas. Turn questions into progress.</p>
+        <div class="capabilities" aria-label="Things you can work on">
+          <span>Reasoning</span><span>Writing</span><span>Coding</span><span>Everyday help</span>
+        </div>
+      </section>
+
+      <section id="conversation" class="conversation" aria-label="Conversation" hidden>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      </section>
+
+      <div class="composer-wrap">
+        <form id="composer" class="composer">
+          <label class="visually-hidden" for="message-input">Message LUXORA AI</label>
+          <textarea id="message-input" name="message" rows="1" maxlength="4000"
+            placeholder="Message LUXORA AI…" autocomplete="off" required></textarea>
+          <div class="composer-footer">
+            <span class="composer-hint">Enter to send · Shift + Enter for a new line</span>
+            <button id="send-button" class="send-button" type="submit" aria-label="Send message">
+              <span>Send</span><span aria-hidden="true">↑</span>
+            </button>
+          </div>
+        </form>
+        <p class="disclaimer">AI can make mistakes. Check important information.</p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
