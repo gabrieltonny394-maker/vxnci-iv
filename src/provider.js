@@ -1,3 +1,5 @@
+import { GeminiProvider } from "./gemini-provider.js";
+
 export class ProviderNotConfiguredError extends Error {
   constructor() {
     super("No AI model provider is configured. Connect a provider before sending live prompts.");
@@ -5,16 +7,21 @@ export class ProviderNotConfiguredError extends Error {
   }
 }
 
-/**
- * Provider contract:
- * generate({ conversationId, messages }) must return
- * { content: non-empty string, model: non-empty string }.
- *
- * The default provider deliberately fails closed. It never fabricates an
- * assistant answer when no real model is connected.
- */
 export class UnconfiguredProvider {
+  constructor() {
+    this.configured = false;
+  }
   async generate() {
     throw new ProviderNotConfiguredError();
   }
+}
+
+export function createProviderFromEnv(env = process.env) {
+  if (typeof env.GEMINI_API_KEY === "string" && env.GEMINI_API_KEY.trim()) {
+    return new GeminiProvider({
+      apiKey: env.GEMINI_API_KEY,
+      model: env.GEMINI_MODEL || "gemini-3.8-flash"
+    });
+  }
+  return new UnconfiguredProvider();
 }

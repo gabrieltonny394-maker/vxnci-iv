@@ -1,23 +1,48 @@
 import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { UnconfiguredProvider, ProviderNotConfiguredError } from "./provider.js";
 
 const MAX_BODY_BYTES = 16 * 1024;
 const MAX_MESSAGE_LENGTH = 4000;
+const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
+const STATIC_FILES = {
+  "/": ["index.html", "text/html; charset=utf-8"],
+  "/app.js": ["app.js", "text/javascript; charset=utf-8"],
+  "/styles.css": ["styles.css", "text/css; charset=utf-8"]
+};
 
 function sendJson(response, statusCode, payload) {
   const body = JSON.stringify(payload);
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
     "content-length": Buffer.byteLength(body),
-    "cache-control": "no-store"
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff"
   });
   response.end(body);
+}
+
+async function sendStatic(response, fileName, contentType) {
+  try {
+    const body = await readFile(path.join(PUBLIC_DIR, fileName));
+    response.writeHead(200, {
+      "content-type": contentType,
+      "content-length": body.length,
+      "cache-control": "no-cache",
+      "x-content-type-options": "nosniff",
+      "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    });
+    response.end(body);
+  } catch {
+    sendJson(response, 500, { error: { code: "ASSET_UNAVAILABLE", message: "The application interface could not be loaded." } });
+  }
 }
 
 async function readJson(request) {
   let body = "";
   let size = 0;
-
   for await (const chunk of request) {
     size += chunk.length;
     if (size > MAX_BODY_BYTES) {
@@ -27,7 +52,6 @@ async function readJson(request) {
     }
     body += chunk.toString("utf8");
   }
-
   try {
     return JSON.parse(body || "{}");
   } catch {
@@ -38,18 +62,23 @@ async function readJson(request) {
 }
 
 export function createApp({ provider = new UnconfiguredProvider() } = {}) {
-  // In-memory storage is intentionally temporary. Conversations reset when
-  // this process restarts; persistent storage will be added as a separate step.
   const conversations = new Map();
 
   return createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://localhost");
 
+    if (request.method === "GET" && STATIC_FILES[url.pathname]) {
+      const [fileName, contentType] = STATIC_FILES[url.pathname];
+      return sendStatic(response, fileName, contentType);
+    }
+
     if (request.method === "GET" && url.pathname === "/health") {
       return sendJson(response, 200, {
         status: "ok",
         service: "luxora-ai-conversation-api",
-        providerConfigured: provider instanceof UnconfiguredProvider ? false : true,
+        providerConfigured: provider.configured ?? !(provider instanceof UnconfiguredProvider),
+        provider: provider.configured ? "gemini" : null,
+        model: provider.configured ? provider.model ?? null : null,
         storage: "in-memory",
         lifecycle: "Prototype"
       });
@@ -78,7 +107,7 @@ export function createApp({ provider = new UnconfiguredProvider() } = {}) {
     const content = input.content.trim();
     if (content.length > MAX_MESSAGE_LENGTH) {
       return sendJson(response, 400, {
-        error: { code: "MESSAGE_TOO_LONG", message: `content must be at most ${MAX_MESSAGE_LENGTH} characters.` }
+        error: { code: "MESSAGE_TOO_LONG", message: "content must be at most " + MAX_MESSAGE_LENGTH + " characters." }
       });
     }
 
@@ -112,7 +141,6 @@ export function createApp({ provider = new UnconfiguredProvider() } = {}) {
         model: generated.model,
         createdAt: new Date().toISOString()
       };
-
       conversations.set(conversationId, [...candidateHistory, assistantMessage]);
       return sendJson(response, 200, {
         conversationId,
